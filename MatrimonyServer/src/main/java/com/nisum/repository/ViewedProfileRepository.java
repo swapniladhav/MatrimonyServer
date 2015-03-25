@@ -6,11 +6,11 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import com.nisum.domain.Profile;
-import java.lang.Integer;
+import com.nisum.domain.ViewedProfile;
 
 @Repository
-public interface ProfileRepository extends CrudRepository<Profile, String> {
+public interface ViewedProfileRepository extends CrudRepository<ViewedProfile, String> {
 	
-	List<Profile> findByProfileId(Integer profileId);
+	List<ViewedProfile> findByProfileId(String profileId);
 	
 }

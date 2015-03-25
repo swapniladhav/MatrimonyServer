@@ -40,6 +40,6 @@
 		<constructor-arg ref="converter" />
 	</bean>
 	
-	<mongo:repositories base-package="com.nisum.repository"
+	<mongo:repositories base-package="com.nisum"
 		mongo-template-ref="mongoTemplate" />
 </beans>

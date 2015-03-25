@@ -1,7 +1,7 @@
 package com.nisum.domain;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.util.List;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -15,17 +15,18 @@ public class Profile implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	Integer profileId;
+	String profileId;
 	String fullName;
 	String cast;
 	String city;
 	String religion;
 	Integer age;
-	Date birthDate;
-	public Integer getProfileId() {
+	String birthDate;
+	List<String> profilePics;
+	public String getProfileId() {
 		return profileId;
 	}
-	public void setProfileId(Integer profileId) {
+	public void setProfileId(String profileId) {
 		this.profileId = profileId;
 	}
 	public String getFullName() {
@@ -58,11 +59,18 @@ public class Profile implements Serializable{
 	public void setAge(Integer age) {
 		this.age = age;
 	}
-	public Date getBirthDate() {
+	public String getBirthDate() {
 		return birthDate;
 	}
-	public void setBirthDate(Date birthDate) {
+	public void setBirthDate(String birthDate) {
 		this.birthDate = birthDate;
 	}
+	public List<String> getProfilePics() {
+		return profilePics;
+	}
+	public void setProfilePics(List<String> profilePics) {
+		this.profilePics = profilePics;
+	}
+	 
 	 
 }
