@@ -40,8 +40,7 @@ public class AlbumService {
 	private ViewedProfileService viewedProfileService;
 	@Autowired
 	public RestTemplate restTemplate;
-	@Autowired
-	NewMatchProfile newMatchProfile;
+
  
 	public byte[] getFile(String imageName) {
 		try {
@@ -197,6 +196,7 @@ public class AlbumService {
 				byteList.add(bao.toByteArray());
 				List<byte[]> albumresponse = new ArrayList<byte[]>();
 				albumresponse.add(bao.toByteArray());
+				NewMatchProfile newMatchProfile = new NewMatchProfile();
 				newMatchProfile.setAlbum(albumresponse);
 				newMatchProfile.setProfile(currObj);
 
@@ -255,7 +255,7 @@ public class AlbumService {
 
 					byteList.add(bao.toByteArray());
 			}
-	
+			 NewMatchProfile newMatchProfile = new NewMatchProfile();
 			 newMatchProfile.setAlbum(byteList);
 			 newMatchProfile.setProfile(obj);
 
