@@ -16,7 +16,6 @@ import javax.imageio.ImageIO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsOperations;
@@ -26,11 +25,10 @@ import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import com.mongodb.MongoClient;
 import com.mongodb.gridfs.GridFSDBFile;
 import com.nisum.config.MongoConfig;
-import com.nisum.domain.Profile;
 import com.nisum.domain.NewMatchProfile;
+import com.nisum.domain.Profile;
 import com.nisum.domain.ViewedProfile;
 
 @Component
@@ -40,7 +38,11 @@ public class AlbumService {
 	private MongoConfig mongoConfig;
 	@Autowired
 	private ViewedProfileService viewedProfileService;
-
+	@Autowired
+	public RestTemplate restTemplate;
+	@Autowired
+	NewMatchProfile newMatchProfile;
+ 
 	public byte[] getFile(String imageName) {
 		try {
 			GridFsOperations gridOperations = mongoConfig.gridFsTemplate();
@@ -107,7 +109,7 @@ public class AlbumService {
 		byte[] photo;
 		try {
 			for (String url : albumList) {
-				RestTemplate restTemplate = new RestTemplate();
+				System.out.println(url);
 				photo = restTemplate.getForObject(url, byte[].class);
 				ByteArrayInputStream bis = new ByteArrayInputStream(photo);
 
@@ -170,22 +172,19 @@ public class AlbumService {
 				GridFSDBFile gridFSDBFile = gridOperations.findOne(new Query()
 						.addCriteria(Criteria.where("metadata.profile_id").is(
 								currObj.getProfileId())));
-				Profile listOfObj = mongoOps.findOne(
-						new Query().addCriteria(Criteria.where("profileId").is(
-								currObj.getProfileId())), Profile.class);
+	 
 				// Prepare buffered image.
 				BufferedImage img = ImageIO.read((gridFSDBFile)
 						.getInputStream());
 
-				DBObject db = (gridFSDBFile).getMetaData();
-				Map<String, String> key = db.toMap();
-				Iterator<Entry<String, String>> it = key.entrySet().iterator();
-				if (it.hasNext()) {
-					Entry<String, String> entry = it.next();
-					String strKey = entry.getKey();
-					String strValue = entry.getValue();
-					System.out.println(strKey + " " + strValue);
-				}
+				/*
+				 * DBObject db = (gridFSDBFile).getMetaData(); Map<String,
+				 * String> key = db.toMap(); Iterator<Entry<String, String>> it
+				 * = key.entrySet().iterator(); if (it.hasNext()) {
+				 * Entry<String, String> entry = it.next(); String strKey =
+				 * entry.getKey(); String strValue = entry.getValue();
+				 * System.out.println(strKey + " " + strValue); }
+				 */
 
 				// Create a byte array output stream.
 				ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -196,12 +195,72 @@ public class AlbumService {
 				ImageIO.write(img, strArray[1], bao);
 
 				byteList.add(bao.toByteArray());
-				NewMatchProfile profileResponse = new NewMatchProfile();
-				profileResponse.setAlbum(bao.toByteArray());
-				profileResponse.setProfile(listOfObj);
+				List<byte[]> albumresponse = new ArrayList<byte[]>();
+				albumresponse.add(bao.toByteArray());
+				newMatchProfile.setAlbum(albumresponse);
+				newMatchProfile.setProfile(currObj);
 
-				multiMap.add(profileResponse);
+				multiMap.add(newMatchProfile);
 			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return multiMap;
+
+	}
+	public List<NewMatchProfile> loadAlbum(String profileId) {
+		List<NewMatchProfile> multiMap = new ArrayList<NewMatchProfile>();
+		List<byte[]> byteList = new ArrayList<byte[]>();
+	 
+
+		try {
+			MongoOperations mongoOps = mongoConfig.mongoTemplate();
+			Query serachCriteria = null;
+ 
+				serachCriteria = new Query().addCriteria(Criteria
+						.where("profileId").is(profileId));
+		 
+
+			Profile obj = mongoOps.findOne(serachCriteria, Profile.class);
+
+			GridFsOperations gridOperations = mongoConfig.gridFsTemplate();
+ 
+				List<GridFSDBFile> gridFSDBFile = gridOperations.find(new Query()
+						.addCriteria(Criteria.where("metadata.profile_id").is(
+								obj.getProfileId())));
+			 for (GridFSDBFile gridFS  : gridFSDBFile) {
+				// Prepare buffered image.
+					BufferedImage img = ImageIO.read((gridFS)
+							.getInputStream());
+
+					/*
+					 * DBObject db = (gridFSDBFile).getMetaData(); Map<String,
+					 * String> key = db.toMap(); Iterator<Entry<String, String>> it
+					 * = key.entrySet().iterator(); if (it.hasNext()) {
+					 * Entry<String, String> entry = it.next(); String strKey =
+					 * entry.getKey(); String strValue = entry.getValue();
+					 * System.out.println(strKey + " " + strValue); }
+					 */
+
+					// Create a byte array output stream.
+					ByteArrayOutputStream bao = new ByteArrayOutputStream();
+
+					String[] strArray = (gridFS).getContentType().split("/");
+
+					// Write to output stream
+					ImageIO.write(img, strArray[1], bao);
+
+					byteList.add(bao.toByteArray());
+			}
+	
+			 newMatchProfile.setAlbum(byteList);
+			 newMatchProfile.setProfile(obj);
+
+			 multiMap.add(newMatchProfile);
+			 
 
 		} catch (IOException e) {
 			e.printStackTrace();
